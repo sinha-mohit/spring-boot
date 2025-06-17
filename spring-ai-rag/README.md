@@ -37,6 +37,18 @@ The application will start on [http://localhost:8080](http://localhost:8080).
 - `/api/query` - POST endpoint for submitting queries
 - `/api/chat` - POST endpoint for chat interactions
 
+### Example cURL Request
+
+To query the PDF personal AI assistant, use the following example:
+
+```bash
+curl --location 'http://localhost:8080/rag' \
+--header 'Content-Type: application/json' \
+--data '{
+    "query":"what does mohit do in samsung?"
+}'
+```
+
 ## Configuration
 Edit `src/main/resources/application.properties` to configure application settings.
 
