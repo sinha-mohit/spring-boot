@@ -4,6 +4,8 @@ This project is a Spring Boot application demonstrating Retrieval-Augmented Gene
 
 **Note:** The Llama 3.2 model is running locally and used for AI responses.
 
+**This project works as a PDF personal AI assistant, allowing you to query and chat with your own documents.**
+
 ## Features
 - REST API for querying AI models
 - Retrieval of information from documents (e.g., PDFs)
