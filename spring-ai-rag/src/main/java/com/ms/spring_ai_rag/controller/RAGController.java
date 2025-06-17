@@ -13,6 +13,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -49,6 +50,8 @@ public class RAGController {
 
     @PostConstruct
     public void init() {
+        // Load the PDF file and create a vector store from its content
+        // check other options for vector store, like Pinecone, Weaviate, etc. and more granular control over the vector store
         vectorStore = SimpleVectorStore.builder(embeddingModel).build();
 
         String text = null;
@@ -104,7 +107,9 @@ public class RAGController {
         }
 
         // Retrieval
-        String relevantDocs = vectorStore.similaritySearch(request.getQuery()).stream().map(Document::getText)
+        // String relevantDocs = vectorStore.similaritySearch(request.getQuery()).stream().map(Document::getText)
+        //         .collect(Collectors.joining());
+        String relevantDocs = vectorStore.similaritySearch(SearchRequest.builder().query(request.getQuery()).topK(3).build()).stream().map(Document::getText)
                 .collect(Collectors.joining());
 
         // Augmented
