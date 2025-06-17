@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="10 seconds">
+
+  <!-- Local Profile - Prints in plain text -->
+  <springProfile name="local">
+    <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n</pattern>
+      </encoder>
+    </appender>
+
+
+    <!-- File in JSON -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <file>logs/app-log.json</file>
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>logs/app-log.%d{yyyy-MM-dd}.json</fileNamePattern>
+        <maxHistory>7</maxHistory>
+        <totalSizeCap>10MB</totalSizeCap>
+      </rollingPolicy>
+      <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+          <timestamp>
+            <fieldName>timestamp</fieldName>
+          </timestamp>
+          <mdc />
+          <context />
+          <logLevel />
+          <loggerName />
+          <threadName />
+          <processId />
+          <processName />
+          <hostName />
+          <pattern>
+            <pattern>
+              {
+              "timestamp": "%date{ISO8601}",
+              "level": "%level",
+              "thread": "%thread",
+              "logger": "%logger",
+              "message": "%message",
+              "context": "%mdc",
+              "exception": "%ex{full}",
+              "caller": "%caller",
+              "class": "%class",
+              "method": "%method",
+              "file": "%file",
+              "line": "%line",
+              "application": "my-spring-boot-project",
+              "host": "${HOSTNAME:-unknown}",
+              "traceId": "%X{traceId}",
+              "spanId": "%X{spanId}",
+              "user": "%X{user}",
+              "requestId": "%X{requestId}",
+              "uri": "%X{uri}",
+              "remoteAddr": "%X{remoteAddr}"
+              }
+            </pattern>
+          </pattern>
+          <arguments />
+          <stackTrace />
+        </providers>
+      </encoder>
+    </appender>
+
+    <root level="DEBUG">
+      <appender-ref ref="CONSOLE_PLAIN" />
+      <appender-ref ref="FILE" />
+    </root>
+  </springProfile>
+
+
+
+
+
+
+
+  <!-- Other Profiles - Prints in JSON -->
+  <springProfile name="dev,test,stg,docker">
+    <property name="LEVEL" value="DEBUG"/>
+
+    <!-- Console in JSON -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+          <timestamp>
+            <fieldName>timestamp</fieldName>
+          </timestamp>
+          <mdc />
+          <context />
+          <logLevel />
+          <loggerName />
+          <threadName />
+          <processId />
+          <processName />
+          <hostName />
+          <pattern>
+            <pattern>
+              {
+              "timestamp": "%date{ISO8601}",
+              "level": "%level",
+              "thread": "%thread",
+              "logger": "%logger",
+              "message": "%message",
+              "context": "%mdc",
+              "exception": "%ex{full}",
+              "caller": "%caller",
+              "class": "%class",
+              "method": "%method",
+              "file": "%file",
+              "line": "%line",
+              "application": "my-spring-boot-project",
+              "host": "${HOSTNAME:-unknown}",
+              "traceId": "%X{traceId}",
+              "spanId": "%X{spanId}",
+              "user": "%X{user}",
+              "requestId": "%X{requestId}",
+              "uri": "%X{uri}",
+              "remoteAddr": "%X{remoteAddr}"
+              }
+            </pattern>
+          </pattern>
+          <arguments />
+          <stackTrace />
+        </providers>
+      </encoder>
+    </appender>
+
+    <!-- File in JSON -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <file>logs/app-log.json</file>
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>logs/app-log.%d{yyyy-MM-dd}.json</fileNamePattern>
+        <maxHistory>7</maxHistory>
+        <totalSizeCap>10MB</totalSizeCap>
+      </rollingPolicy>
+      <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+        <providers>
+          <!-- same providers as above -->
+        </providers>
+      </encoder>
+    </appender>
+
+    <root level="INFO">
+      <appender-ref ref="CONSOLE_JSON" />
+      <appender-ref ref="FILE" />
+    </root>
+  </springProfile>
+
+  <!-- Other static logger configurations -->
+  <logger name="org.springframework" level="INFO" />
+  <logger name="org.springframework.web" level="INFO" />
+  <logger name="org.springframework.data.jpa" level="INFO" />
+  <logger name="org.hibernate" level="INFO" />
+
+</configuration>
