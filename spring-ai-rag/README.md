@@ -26,6 +26,14 @@ This project is a Spring Boot application demonstrating Retrieval-Augmented Gene
 
 ### Build and Run
 
+To build the project without running tests:
+
+```
+./mvnw clean install -DskipTests
+```
+
+To build and run with tests:
+
 ```
 ./mvnw clean install
 ./mvnw spring-boot:run
