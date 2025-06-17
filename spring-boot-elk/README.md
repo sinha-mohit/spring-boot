@@ -1,5 +1,8 @@
 # my-spring-boot-project with ELK
 
+## Summary
+This project is a Spring Boot application integrated with a MySQL database and a full ELK (Elasticsearch, Logstash, Kibana) stack for centralized logging and monitoring. It uses Docker Compose to orchestrate all services, including the app, MySQL, Elasticsearch, Logstash, Kibana, and Filebeat. Logs are written in JSON format and shipped to the ELK stack for visualization in Kibana. Filebeat is used to collect and forward application logs to Logstash, enabling real-time log aggregation and analysis. The setup supports both local and Dockerized development, with environment-based configuration and secure credential management.
+
 ## MySQL Database Setup
 
 1. Create a `.env` file in your project root with the following content:
