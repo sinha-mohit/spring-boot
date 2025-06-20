@@ -20,19 +20,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class RagService {
-    private final String promt = """
-        You are a helpful assistant that helps users with their wallet-related queries. You have access to a knowledge base of PDF documents that contain information about various wallets, including their features, security measures, and how to use them effectively.
-        When a user asks a question, you will search through the knowledge base to find relevant information and provide a concise answer. If the information is not available in the knowledge base, you will inform the user that you cannot answer their question at this time.
-        If the user asks about a specific wallet, you will provide information about that wallet, including its features, security measures, and how to use it effectively. If the user asks a general question about wallets, you will provide a general overview of wallets, including their purpose, types, and how to use them effectively.
-        If the user asks about a specific feature or security measure, you will provide information about that feature or security measure, including how it works and why it is important.
-
-        Use the information from the DOCUMENTS section to procide accurate answers to the question in the QUESTION section.
-        If Unsure, simple respond with "I am not sure about that, please check the documents for more information."
-        DOCUMENTS:
-        %s
-        QUESTION: %s
-        """;
-
 
     private final ElasticsearchVectorStore vectorStore;
     private final ChatClient chatClient;
