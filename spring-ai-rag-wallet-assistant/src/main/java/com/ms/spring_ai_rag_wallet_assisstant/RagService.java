@@ -7,12 +7,22 @@ import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 // import co.elastic.clients.elasticsearch.ingest.simulate.Document;
 import org.springframework.ai.document.Document;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class RagService {
     private final String promt = """
         You are a helpful assistant that helps users with their wallet-related queries. You have access to a knowledge base of PDF documents that contain information about various wallets, including their features, security measures, and how to use them effectively.
@@ -27,13 +37,10 @@ public class RagService {
         QUESTION: %s
         """;
 
+    @Autowired
     private ElasticsearchVectorStore vectorStore;
+    @Autowired
     private ChatClient chatClient;
-    
-    public RagService(ElasticsearchVectorStore vectorStore, ChatClient.Builder chatClientBuilder) {
-        this.vectorStore = vectorStore;
-        this.chatClient = chatClientBuilder.build();
-    }
 
     public void ingestPDF(String pdfPath) {
         List<Document> data = new PagePdfDocumentReader(pdfPath).read();

@@ -8,6 +8,7 @@ class SpringAiRagWalletAssisstantApplicationTests {
 
 	@Test
 	void contextLoads() {
+		System.out.println("Context loads successfully");
 	}
 
 }

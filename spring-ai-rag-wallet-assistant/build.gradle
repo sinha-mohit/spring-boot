@@ -1,53 +1,67 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.ms'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-}
-
-repositories {
-	mavenCentral()
-}
-
-ext {
-	set('springAiVersion', "1.0.0")
-}
-
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
-	implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
-	implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
-	// implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-	// implementation 'org.springframework.ai:spring-ai-starter-vector-store-elasticsearch'
-	implementation("org.springframework.ai:spring-ai-elasticsearch-store:1.0.0")
-	implementation 'org.springframework.ai:spring-ai-tika-document-reader'
-	implementation 'co.elastic.clients:elasticsearch-java:8.13.0' // Force compatible version
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-configurations.all {
-    resolutionStrategy {
-        force 'co.elastic.clients:elasticsearch-java:8.13.0'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springAiVersion = '1.0.0'
+    elasticsearchJavaVersion = '8.13.4' // ✅ minimum required for Spring AI 1.0.0 compatibility
+}
+
 dependencyManagement {
-	imports {
-		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-	}
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+dependencies {
+    // Spring Boot starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // Spring AI integrations
+    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-elasticsearch'
+    implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+
+    // Compatible Elasticsearch Java client
+    implementation "co.elastic.clients:elasticsearch-java:${elasticsearchJavaVersion}"
+
+    // Lombok
+    implementation 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testImplementation 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// Enforce consistent Elasticsearch Java client version
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'co.elastic.clients' &&
+            details.requested.name == 'elasticsearch-java') {
+            details.useVersion elasticsearchJavaVersion
+        }
+    }
 }
