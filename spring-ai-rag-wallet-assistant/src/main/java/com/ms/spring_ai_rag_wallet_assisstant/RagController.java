@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/rag")
 public class RagController {
+    
     private final RagService ragService;
     public RagController(RagService ragService) {
         this.ragService = ragService;

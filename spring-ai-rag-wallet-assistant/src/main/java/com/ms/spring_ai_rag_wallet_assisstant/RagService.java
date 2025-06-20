@@ -19,10 +19,6 @@ import org.springframework.ai.document.Document;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class RagService {
     private final String promt = """
         You are a helpful assistant that helps users with their wallet-related queries. You have access to a knowledge base of PDF documents that contain information about various wallets, including their features, security measures, and how to use them effectively.
@@ -37,10 +33,14 @@ public class RagService {
         QUESTION: %s
         """;
 
-    @Autowired
-    private ElasticsearchVectorStore vectorStore;
-    @Autowired
-    private ChatClient chatClient;
+
+    private final ElasticsearchVectorStore vectorStore;
+    private final ChatClient chatClient;
+
+    public RagService(ElasticsearchVectorStore vectorStore, ChatClient.Builder chatClientBuilder) {
+        this.vectorStore = vectorStore;
+        this.chatClient = chatClientBuilder.build();
+    }
 
     public void ingestPDF(String pdfPath) {
         List<Document> data = new PagePdfDocumentReader(pdfPath).read();
