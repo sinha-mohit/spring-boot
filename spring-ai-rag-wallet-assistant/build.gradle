@@ -63,5 +63,9 @@ configurations.all {
             details.requested.name == 'elasticsearch-java') {
             details.useVersion elasticsearchJavaVersion
         }
+        if (details.requested.group == 'org.elasticsearch.client' &&
+            details.requested.name == 'elasticsearch-rest-client') {
+            details.useVersion elasticsearchJavaVersion
+        }
     }
 }
