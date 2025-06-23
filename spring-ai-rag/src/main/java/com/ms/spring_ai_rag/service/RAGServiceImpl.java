@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class RAGServiceImpl implements RAGService {
@@ -31,6 +33,8 @@ public class RAGServiceImpl implements RAGService {
     private final EmbeddingModel embeddingModel;
     private SimpleVectorStore vectorStore;
     private String template;
+    // logger
+    private static final Logger log = LoggerFactory.getLogger(RAGServiceImpl.class);
 
     @Value("${file.path}")
     private Resource resource;
@@ -80,8 +84,17 @@ public class RAGServiceImpl implements RAGService {
                 .stream()
                 .map(Document::getContent)
                 .collect(Collectors.joining("\n---\n"));
+        
+        if (relevantDocs.isEmpty()) {
+            throw new IllegalArgumentException("No relevant documents found for the query.");
+        }
+
+        // Log the relevant documents
+        log.info("Relevant documents for query '{}':\n{}", userQuery, relevantDocs);
+
         // Augmented
         Message systemMessage = new SystemPromptTemplate(template).createMessage(Map.of("documents", relevantDocs));
+        
         // Generation
         Message userMessage = new UserMessage(userQuery);
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
