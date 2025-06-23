@@ -7,7 +7,7 @@ This project is an onboarding assistant chatbot for Samsung Wallet partners. The
 ## Prerequisites
 
 - **Docker** must be installed and running on your system. [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- **Ollama** (or another local Llama server) must be installed and running for local Llama 3.2 support. [Get Ollama](https://ollama.com/)
+- **Ollama** (local LLM and embedding server) must be installed and running. [Get Ollama](https://ollama.com/)
 - **Java 17+** and **Gradle** (the project uses the Gradle wrapper, so no manual install is needed)
 
 ---
@@ -23,7 +23,7 @@ To start everything (Elasticsearch, Kibana, index setup, and the Spring Boot app
 This script will:
 - Start Elasticsearch and Kibana using Docker Compose
 - Wait for Elasticsearch to be available
-- Delete and recreate the index `fri-20-jun` with a 1024-dimensional dense vector mapping (for Llama 3.2 embeddings)
+- Delete and recreate the index `fri-20-jun` with a 1024-dimensional dense vector mapping (for embeddings)
 - Clean build and run the Spring Boot application
 
 - **Elasticsearch**: [http://localhost:9200](http://localhost:9200)
@@ -53,25 +53,51 @@ This script will:
    ```sh
    ollama serve
    ```
-3. Pull the Llama 3 model:
+3. Pull the embedding model (recommended: nomic-embed-text):
    ```sh
-   ollama pull llama3.2
+   ollama pull nomic-embed-text
    ```
-4. Run the Llama 3 model:
+4. Pull the LLM model you want to use for chat (e.g., mistral, llama3, etc.):
    ```sh
-   ollama run llama3.2
+   ollama pull mistral
+   # or
+   ollama pull llama3
    ```
-5. The Spring Boot app is configured to use the local Llama 3.2 model via Ollama at `http://localhost:11434`.
+5. The Spring Boot app is configured to use Ollama at `http://localhost:11434` for both embeddings and LLM chat.
+
+---
+
+## API Usage
+
+- **Ingest PDF:**
+  - Endpoint: `POST /api/rag/ingestPDF`
+  - Body: `pdfPath` (string, path to PDF file)
+  - The service splits the PDF, generates embeddings for each chunk using Ollama, and indexes them into Elasticsearch.
+
+- **Query:**
+  - Endpoint: `POST /api/rag/query`
+  - Body: `question` (string)
+  - The service generates an embedding for the question using Ollama, performs vector search in Elasticsearch, and uses the LLM to answer based on retrieved context.
 
 ---
 
 ## Troubleshooting
 
+- **Ollama model not found error:**
+  - If you see an error like:
+    > Error querying: 404 - {"error":"model 'mistral' not found, try pulling it first"}
+  - Run:
+    ```sh
+    ollama pull mistral
+    # or the model name shown in the error
+    ```
+  - Make sure the model is running and available to Ollama.
+
 - **Dimension mismatch error:**
   - If you see an error like:
     > The [dense_vector] field [embedding] ... has a different number of dimensions [1024] than defined in the mapping [1536]
   - The index mapping and embedding model output dimensions do not match.
-  - The `start.sh` script will always recreate the index with 1024 dimensions to match Llama 3.2.
+  - The `start.sh` script will always recreate the index with 1024 dimensions to match the default embedding model.
 
 - **Index not updating:**
   - Make sure to stop the app, delete the index, and restart using `./start.sh`.
@@ -87,10 +113,10 @@ This script will:
   - Assist Samsung Wallet partners with onboarding.
   - Provide a chat interface to answer questions about APIs and documentation.
 - **Tech Stack:**
-  - Spring Boot, Spring AI, Elasticsearch, Kibana, Ollama (Llama 3.2)
+  - Spring Boot, Spring AI, Elasticsearch, Kibana, Ollama (for both LLM and embeddings)
 - **Index:**
   - Name: `fri-20-jun`
-  - Vector dimension: 1024 (for Llama 3.2)
+  - Vector dimension: 1024 (for nomic-embed-text or similar)
 
 ---
 
@@ -101,4 +127,4 @@ This script will:
 
 ---
 
-For any issues, please ensure Docker and Ollama are running and the required ports are available. If you change embedding models, update the index mapping accordingly.
+For any issues, please ensure Docker and Ollama are running and the required ports are available. If you change embedding or LLM models, update the index mapping and configuration accordingly.

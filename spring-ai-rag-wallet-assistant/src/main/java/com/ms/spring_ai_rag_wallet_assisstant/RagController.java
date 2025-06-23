@@ -28,7 +28,9 @@ public class RagController {
     @PostMapping("/query")
     public ResponseEntity query(String question) {
         try {
-            String answer = ragService.queryLLM(question);
+            // Generate embedding for the question using Ollama
+            java.util.List<Float> queryVector = ragService.getEmbeddingFromOllama(question);
+            String answer = ragService.queryLLM(question, queryVector);
             return ResponseEntity.ok(answer);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error querying: " + e.getMessage());
