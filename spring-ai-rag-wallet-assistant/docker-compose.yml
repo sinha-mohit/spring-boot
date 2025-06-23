@@ -28,6 +28,8 @@ services:
       - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
       - KIBANA_USERNAME=${KIBANA_USERNAME}
       - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+    depends_on:
+      - elasticsearch
 volumes:
   esdata:
     driver: local
