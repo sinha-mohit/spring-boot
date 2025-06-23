@@ -2,6 +2,7 @@ package com.ms.spring_ai_rag.service;
 
 import com.ms.spring_ai_rag.model.ChatResponse;
 import com.ms.spring_ai_rag.model.QueryRequest;
+import com.ms.spring_ai_rag.util.PdfToVectorStoreUtil;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -9,6 +10,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,17 +43,9 @@ public class RAGServiceImpl implements RAGService {
 
     @PostConstruct
     public void init() {
-        vectorStore = SimpleVectorStore.builder(embeddingModel).build();
-        String text = null;
-        try (var document = org.apache.pdfbox.pdmodel.PDDocument.load(resource.getFile())) {
-            var pdfStripper = new org.apache.pdfbox.text.PDFTextStripper();
-            text = pdfStripper.getText(document);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Document document = new Document(text);
-        List<Document> documentList = List.of(document);
-        vectorStore.accept(documentList);
+        int chunkSize = 1000; // characters
+        int overlap = 200;    // characters
+        vectorStore = PdfToVectorStoreUtil.buildVectorStoreFromPdf(resource, embeddingModel, chunkSize, overlap);
         template = "You are a highly reliable and secure AI assistant. Answer user questions strictly using only the information provided in the KNOWLEDGE BASE below. " +
                 "- If the answer is not present or cannot be inferred from the knowledge base, respond only with: 'I don't know.'\n" +
                 "- Do not use any external knowledge or make assumptions.\n" +
@@ -76,8 +69,17 @@ public class RAGServiceImpl implements RAGService {
             throw new IllegalArgumentException("Query contains invalid characters.");
         }
         // Retrieval
-        String relevantDocs = vectorStore.similaritySearch(userQuery).stream().map(Document::getText)
-                .collect(Collectors.joining());
+        int topK = 3;
+        double similarityThreshold = 0.75;
+        String relevantDocs = vectorStore.doSimilaritySearch(
+                SearchRequest.builder()
+                        .query(userQuery)
+                        .topK(topK)
+                        .similarityThreshold(similarityThreshold)
+                        .build())
+                .stream()
+                .map(Document::getContent)
+                .collect(Collectors.joining("\n---\n"));
         // Augmented
         Message systemMessage = new SystemPromptTemplate(template).createMessage(Map.of("documents", relevantDocs));
         // Generation
