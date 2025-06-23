@@ -10,7 +10,7 @@ until curl -s http://localhost:9200 >/dev/null; do
 done
 
 # Delete and recreate the index with 1024 dimensions
-INDEX_NAME="fri-20-jun"
+INDEX_NAME="mon-23-jun"
 echo "Deleting existing index (if any): $INDEX_NAME"
 curl -s -X DELETE "http://localhost:9200/$INDEX_NAME" > /dev/null
 

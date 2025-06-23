@@ -12,7 +12,7 @@ spring:
     vectorstore:
       elasticsearch:
         initialize-schema: true
-        index-name: fri-20-jun
+        index-name: mon-23-jun
         embedding-dimension: 1024  # Ensure this matches your embedding model output
 
   elasticsearch:
