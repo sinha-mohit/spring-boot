@@ -181,3 +181,121 @@ graph TD
 ### Filebeat & Logstash
 - Filebeat is configured in `filebeat.yml` to read all JSON logs from `/logs/*.json` and forward them to Logstash at `logstash:5000` (internal Docker network).
 - Logstash host port is mapped to `15000` to avoid conflicts, but Filebeat uses the internal port.
+
+## Kafka Log Streaming and Python Consumer Service
+
+### New Services Added
+- **Kafka** and **Zookeeper**: Added to `docker-compose.yml` for log streaming.
+- **Kafka Topic**: `app-logs` is automatically created for log messages.
+- **Logstash**: Now outputs logs to both Elasticsearch (for Kibana) and Kafka.
+- **Python Kafka Consumer**: Production-grade, SOLID-compliant service in `python-services/` that reads logs from Kafka and prints to console.
+
+### How It Works
+- Application logs are shipped via Filebeat to Logstash.
+- Logstash outputs logs to both Elasticsearch (for Kibana) and the Kafka topic `app-logs`.
+- The Python consumer service reads from `app-logs` and prints logs to the console.
+
+### Running the Stack
+
+1. **Start all services (including Kafka) with Docker Compose:**
+
+   ```sh
+   docker-compose up --build
+   ```
+
+2. **Start the Python Kafka Consumer:**
+
+   ```sh
+   cd python-services
+   pip install -r requirements.txt
+   python kafka_log_consumer.py
+   ```
+
+   - The consumer will read from the `app-logs` topic and print logs to the console.
+   - Configuration can be customized via the `.env` file in `python-services/`.
+
+### Python Consumer Configuration
+
+Edit `python-services/.env` to override defaults:
+
+```
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+KAFKA_TOPIC=app-logs
+KAFKA_GROUP_ID=log-consumer-group
+KAFKA_AUTO_OFFSET_RESET=earliest
+KAFKA_ENABLE_AUTO_COMMIT=true
+KAFKA_CONSUMER_TIMEOUT_MS=1000
+```
+
+### Python Consumer Design Principles
+- **SOLID Principles**: Modular, extensible, and testable code.
+- **Configurable**: All settings via environment variables or `.env` file.
+- **Extensible**: Log handling logic is abstracted for easy extension.
+
+### Troubleshooting
+- Ensure all containers are healthy (`docker ps`).
+- Kafka must be running before starting the Python consumer.
+- If you change the Kafka topic or broker, update `.env` accordingly.
+
+### File Overview
+- `docker-compose.yml`: Now includes Kafka and Zookeeper.
+- `logstash.conf`: Outputs to both Elasticsearch and Kafka.
+- `python-services/`: Contains the Python Kafka consumer service.
+  - `requirements.txt`: Python dependencies.
+  - `consumer_config.py`: Configuration loader.
+  - `kafka_log_consumer.py`: Main consumer logic.
+  - `.env`: Environment variables for configuration.
+
+---
+
+### **What’s Done**
+
+1. **Kafka & Zookeeper**: Added to `docker-compose.yml` for log streaming.
+2. **Logstash**: Now outputs logs to both Elasticsearch (for Kibana) and Kafka (`app-logs` topic).
+3. **Python Consumer Service** (`python-services/`):
+   - `requirements.txt`: Declares dependencies (`kafka-python`, `python-dotenv`).
+   - `consumer_config.py`: Loads configuration from environment variables or `.env`.
+   - `kafka_log_consumer.py`: Implements a modular, extensible, production-grade Kafka log consumer.
+   - `.env`: (You may need to create this file manually if blocked) Holds configuration defaults.
+4. **README.md**: Updated with setup, configuration, and usage instructions for the new services.
+
+---
+
+### **How to Run Everything**
+
+1. **Start all services (including Kafka) with Docker Compose:**
+   ```sh
+   docker-compose up --build
+   ```
+
+2. **Start the Python Kafka Consumer:**
+   ```sh
+   cd python-services
+   python3.12 --version
+   python3.12 -m venv wlt-log-env
+   source wlt-log-env/bin/activate
+   pip install -r requirements.txt
+   python kafka_log_consumer.py
+   deactivate
+   ```
+   - The consumer will read from the `app-logs` topic and print logs to the console.
+   - Configuration can be customized via the `.env` file in `python-services/`.
+
+---
+
+### **If `.env` File Creation Was Blocked**
+
+Please manually create `python-services/.env` with the following content:
+```
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+KAFKA_TOPIC=app-logs
+KAFKA_GROUP_ID=log-consumer-group
+KAFKA_AUTO_OFFSET_RESET=earliest
+KAFKA_ENABLE_AUTO_COMMIT=true
+KAFKA_CONSUMER_TIMEOUT_MS=1000
+```
+
+---
+
+**You now have a robust, extensible log streaming pipeline with ELK, Kafka, and a Python consumer.**  
+Let me know if you want enhancements (e.g., Dockerize the Python service, add tests, or more advanced log handling)!
