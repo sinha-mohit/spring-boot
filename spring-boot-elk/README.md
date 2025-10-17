@@ -181,3 +181,28 @@ graph TD
 ### Filebeat & Logstash
 - Filebeat is configured in `filebeat.yml` to read all JSON logs from `/logs/*.json` and forward them to Logstash at `logstash:5000` (internal Docker network).
 - Logstash host port is mapped to `15000` to avoid conflicts, but Filebeat uses the internal port.
+
+
+
+
+
+
+
+
+# Elasticsearch MCP Server (Minimal Setup)
+## 1. .env
+```env
+ES_URL=http://localhost:9200
+ES_API_KEY=
+
+
+## Load env and run MCP
+```env
+export $(grep -v '^#' .env | xargs)
+docker run --rm -e ES_URL=http://host.docker.internal:9200 -p 8089:8080 docker.elastic.co/mcp/elasticsearch http
+
+## Python Agent
+```env
+client = MultiServerMCPClient({
+    "elasticsearch-mcp-server": {"url": "http://localhost:8089/mcp", "transport": "streamable_http"}
+})
