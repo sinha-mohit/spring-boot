@@ -31,8 +31,8 @@ public class LogGenerator {
         logger.info(currentTime + "LogGenerator initialized! If you see this, the bean is active and scheduled tasks should run.");
     }
 
-    // 1 log every 10 seconds = 6 logs per minute
-    @Scheduled(fixedRate = 10000)
+    // 1 log every 1 seconds = 60 logs per minute
+    @Scheduled(fixedRate = 1000)
     public void generateLogs() {
          // add time also in the log messages
         Time currentTime = new Time(System.currentTimeMillis());

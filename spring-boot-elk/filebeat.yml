@@ -2,14 +2,48 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /logs/*.json
+      - /logs/app-log*.json
     json.keys_under_root: true
     json.add_error_key: true
+    json.message_key: message
+    multiline:
+      pattern: '^[[:space:]]+(at|\\.{3})[[:space:]]+\b'
+      negate: false
+      match: after
+    fields:
+      app: "my-spring-boot-project"
+      environment: "docker"
+    fields_under_root: true
+    close_inactive: 10m
+    ignore_older: 48h
+    clean_inactive: 72h
+
+filebeat.registry.flush: 5s
+
+queue.mem:
+  events: 4096
+  flush.min_events: 512
+  flush.timeout: 5s
 
 output.logstash:
   hosts: ["logstash:5000"]
+  bulk_max_size: 2048
+  compression_level: 3
+  retry.max_attempts: 3
+  retry.backoff: 1s
+  timeout: 30s
 
 setup.kibana:
   host: "kibana:5601"
 
-logging.level: info
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+
+logging.level: debug
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644

@@ -4,6 +4,9 @@ FROM eclipse-temurin:24-jdk
 # Set the working directory
 WORKDIR /app
 
+# Create logs directory with appropriate permissions
+RUN mkdir -p /logs && chmod 777 /logs
+
 # Copy build files
 COPY build/libs/my-spring-boot-project-0.0.1-SNAPSHOT.jar app.jar
 

@@ -37,11 +37,12 @@ services:
       - .env
     restart: unless-stopped
     volumes:
-      - logs:/app/logs
+      - logs:/logs
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
     container_name: elasticsearch
+    restart: unless-stopped
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
@@ -84,6 +85,9 @@ services:
       - "5601:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - NODE_OPTIONS=--max-old-space-size=512
+    restart: unless-stopped
+    mem_limit: 1g
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.4
