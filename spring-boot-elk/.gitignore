@@ -1,3 +1,5 @@
+python/log-consumer/.venv/
+python/__pycache__/
 HELP.md
 .gradle
 build/

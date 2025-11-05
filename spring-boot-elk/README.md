@@ -176,11 +176,45 @@ graph TD
 - **MySQL**: `localhost:3309` (user: `$MYSQL_USER`, password: `$MYSQL_PASSWORD`)
 - **Kibana**: [http://localhost:5601](http://localhost:5601)
 - **Elasticsearch**: [http://localhost:9200](http://localhost:9200)
+- **Kafka (external listener)**: `localhost:9094` (internal: `kafka:9092`)
 - **Logstash (host port)**: `localhost:15000` (internal: 5000, for Filebeat)
 
 ### Filebeat & Logstash
 - Filebeat is configured in `filebeat.yml` to read all JSON logs from `/logs/*.json` and forward them to Logstash at `logstash:5000` (internal Docker network).
-- Logstash host port is mapped to `15000` to avoid conflicts, but Filebeat uses the internal port.
+- Logstash fans out logs to both Elasticsearch and Kafka (`spring-boot-logs` topic). Host port `15000` maps to internal 5000 for visibility, but Filebeat uses the internal port.
+
+## Kafka Streaming (Bitnami KRaft) & Python Consumer
+
+### How logs flow to Kafka
+- `Logstash` writes each event to Kafka topic `spring-boot-logs` in addition to Elasticsearch.
+- Kafka runs via Bitnami image in KRaft mode with dual listeners:
+  - Internal: `kafka:9092` (used by services inside Docker)
+  - External: `localhost:9094` (used by tools on your host)
+
+### Run the Python consumer manually
+1. Ensure the stack is running:
+   ```sh
+   ./run-docker.sh
+   ```
+2. In a new terminal, install and run the consumer:
+   ```sh
+   cd python/log-consumer
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   # Optional overrides:
+   # export KAFKA_BOOTSTRAP_SERVERS=localhost:9094
+   # export KAFKA_TOPIC=spring-boot-logs
+   # export KAFKA_GROUP_ID=log-consumer
+   python main.py
+   ```
+3. You should see JSON log events pretty-printed as they arrive.
+
+### Notes
+- Default topic: `spring-boot-logs`. Default bootstrap server: `localhost:9094`.
+- You can also use `kcat` for quick checks:
+  ```sh
+  kcat -b localhost:9094 -t spring-boot-logs -C -o beginning -q
+  ```
 
 
 
